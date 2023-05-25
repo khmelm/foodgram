@@ -3,8 +3,6 @@ from datetime import timedelta
 
 from pathlib import Path
 
-from rest_framework_simplejwt.authentication import TokenAuthentication
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -70,7 +68,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', default='postgres'),
         'USER': os.getenv('POSTGRES_USER', default='postgres'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': os.getenv('DB_HOST', default='db'),
+        'HOST': os.getenv('DB_HOST', default='localhost'),
         'PORT': os.getenv('DB_PORT', default=5432),
     },
 }
@@ -90,15 +88,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'users.UserFoodgram'
+
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.TokenAuthentication',
-    ],
 }
-
 
 DJOSER = {
     'HIDE_USERS': False,
@@ -131,5 +130,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'users.UserFoodgram'
+SHOPPING_CART_FILE_NAME = 'shopping_list.txt'
 

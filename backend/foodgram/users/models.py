@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import F, Q
-from foodgram import settings
 
 
 class UserRoles:
@@ -65,13 +64,13 @@ class UserFoodgram(AbstractUser):
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        UserFoodgram,
         on_delete=models.CASCADE,
         related_name='follower',
         verbose_name='Подписчик',
     )
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        UserFoodgram,
         on_delete=models.CASCADE,
         related_name='following',
         verbose_name='Отслеживаемый автор'
@@ -99,7 +98,7 @@ class Subscription(models.Model):
                 name='unique_following'
             ),
             models.CheckConstraint(
-                check=~Q(following=F('follower')),
+                check=~Q(author=F('user')),
                 name='prevent_self_subscription'
             )
         )

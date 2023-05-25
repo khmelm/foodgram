@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
-from foodgram import settings
-
 
 User = get_user_model()
 
@@ -28,7 +26,7 @@ class Tag(models.Model):
         verbose_name_plural = 'Тэги'
 
     def __str__(self):
-        return self.slug
+        return self.name
 
 
 class Ingredient(models.Model):
@@ -54,7 +52,7 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientsInRecipe',
         through_fields=('recipe', 'ingredient'),
@@ -62,7 +60,7 @@ class Recipe(models.Model):
         verbose_name='Ингредиенты рецепта',
         help_text='Укажите ингредиенты'
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         db_index=True,
         related_name='recipe',
@@ -75,7 +73,7 @@ class Recipe(models.Model):
         help_text='Введите название рецепта'
     )
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name='recipe',
         verbose_name='Автор рецепта',
@@ -144,7 +142,7 @@ class IngredientsInRecipe(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name='favorite',
         verbose_name='Пользователь',
@@ -172,9 +170,9 @@ class Favorite(models.Model):
         return f'{self.user} добавил {self.recipe} в избранное'
 
 
-class ShopingCart(models.Model):
+class ShoppingCart(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name='shopping_cart',
         verbose_name='Пользователь списка покупок',

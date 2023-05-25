@@ -36,3 +36,5 @@ social-auth-core==4.4.2
 sqlparse==0.3.1
 toml==0.10.2
 urllib3==1.26.15
+Pillow==9.5.0
+drf-extra-fields==3.4.0
