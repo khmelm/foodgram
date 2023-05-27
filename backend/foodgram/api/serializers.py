@@ -1,10 +1,15 @@
 from django.db import transaction
-from rest_framework import serializers, validators
-from djoser.serializers import UserSerializer, UserCreateSerializer
-from recipes.models import (Favorite, Ingredient, IngredientsInRecipe,
-                            ShoppingCart, Tag, Recipe)
-from users.models import UserFoodgram, Subscription
+from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers, validators
+
+from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
+                            ShoppingCart, Tag)
+from users.models import Subscription, UserFoodgram
+
+
+MAX_VALUE = 32000
+MIN_VALUE = 0
 
 
 class CustomUserSerializer(UserSerializer):
@@ -29,14 +34,7 @@ class CustomUserSerializer(UserSerializer):
         if not request or request.user.is_anonymous:
             return False
         user = request.user
-        return Subscription.objects.filter(
-            author=obj,
-            user=user
-        ).exists()
-
-
-class CustomUserCreateSerializer(UserCreateSerializer):
-    pass
+        return obj.following.filter(user=user).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -160,49 +158,69 @@ class CreateUpdateDeleteRecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         ingredients = data['ingredients']
-        ingredients_list = []
+        ingredients_set = set()
         if not ingredients:
             raise serializers.ValidationError({
                 'ingredients': 'Поле с ингредиентами не может быть пустым'
             })
         for ingredient in ingredients:
             amount = ingredient['amount']
-            if int(amount) <= 0:
+            if int(amount) <= MIN_VALUE:
                 raise serializers.ValidationError({
                     'amount': 'Количество ингредиентов должно быть больше 0'
                 })
+            if int(amount) > MAX_VALUE:
+                raise serializers.ValidationError({
+                    'amount': 'Количество ингредиентов должно быть больше 32000'
+                })
             ingredient_id = ingredient['id']
-            if ingredient_id in ingredients_list:
+            if ingredient_id in ingredients_set:
                 raise serializers.ValidationError({
                     'ingredients': (
                         'В рецепте не может быть повторяющихся ингредиентов'
                     )
                 })
-            ingredients_list.append(ingredient_id)
+            ingredients_set.add(ingredient_id)
 
         tags = data['tags']
         tags_list = []
-        for tag in tags:
-            if tag in tags_list:
-                raise serializers.ValidationError({
-                    'tags': 'В рецепте не может быть повторяющихся тэгов'
-                })
-            tags_list.append(tag)
+        if len(tags) > len(set(tags)):
+            raise serializers.ValidationError({
+                'tags': 'В рецепте не может быть повторяющихся тэгов'
+            })
+        tags_list.append(tags)
+
+        recipe = data['name']
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        user = request.user
+        if recipe and user:
+            if user.recipe.filter(name=recipe).exists():
+                raise serializers.ValidationError('Рецепт уже добавлен')
 
         cooking_time = data['cooking_time']
-        if int(cooking_time) <= 0:
+        if int(cooking_time) <= MIN_VALUE:
             raise serializers.ValidationError({
                 'cooking_time': 'Время приготовления не может быть меньше 1'
+            })
+        if int(cooking_time) > MAX_VALUE:
+            raise serializers.ValidationError({
+                'cooking_time': 'Время приготовления не может быть больше 32000'
             })
         return data
 
     @staticmethod
     def create_ingredients(ingredients, recipe):
+        ingredients_in_recipe_list = []
         for ingredient in ingredients:
-            IngredientsInRecipe.objects.create(
-                recipe=recipe, ingredient=ingredient['id'],
+            ingredient_in_recipe = IngredientsInRecipe(
+                recipe=recipe,
+                ingredient=ingredient['id'],
                 amount=ingredient['amount']
             )
+            ingredients_in_recipe_list.append(ingredient_in_recipe)
+        IngredientsInRecipe.objects.bulk_create(ingredients_in_recipe_list)
 
     @transaction.atomic
     def create(self, validated_data):
@@ -266,19 +284,16 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        return Subscription.objects.filter(
-            author=obj.author, user=request.user
-        ).exists()
+        user = request.user
+        return user.follower.all().exists()
 
     def get_recipe(self, obj):
         request = self.context.get('request')
         if request.GET.get('recipe_limit'):
             recipe_limit = int(request.GET.get('recipe_limit'))
-            queryset = Recipe.objects.filter(
-                author=obj.author)[:recipe_limit]
+            queryset = obj.author.recipe.all()[:recipe_limit]
         else:
-            queryset = Recipe.objects.filter(
-                author=obj.author)
+            queryset = obj.author.recipe.all()
         serializer = ShortRecipeSerializer(
             queryset,
             read_only=True,
@@ -312,7 +327,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Нельзя подписаться на самого себя!'
             )
-        if Subscription.objects.filter(user=user, author=author).exists():
+        if user.follower.filter(author=author).exists():
             raise serializers.ValidationError(
                 'Вы уже подписаны на этого пользователя!'
             )

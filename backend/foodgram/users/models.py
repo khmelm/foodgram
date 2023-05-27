@@ -52,14 +52,17 @@ class UserFoodgram(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
+    @property
+    def is_admin(self):
+        return self.is_superuser or self.role == UserRoles.ADMIN
+
     class Meta:
         ordering = ('pk',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
-    @property
-    def is_admin(self):
-        return self.is_superuser or self.role == UserRoles.ADMIN
+    def __str__(self):
+        return self.username
 
 
 class Subscription(models.Model):
@@ -104,6 +107,7 @@ class Subscription(models.Model):
         )
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        ordering = ('author',)
 
     def __str__(self):
         return f'{self.user} теперь подписан на {self.author}'

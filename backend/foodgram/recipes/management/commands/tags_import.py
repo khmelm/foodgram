@@ -1,44 +1,29 @@
-import csv
-import logging
-import os
+from csv import reader
 
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
-
+from django.core.management.base import BaseCommand
 from recipes.models import Tag
-
-logging.basicConfig(
-    level=logging.INFO,
-    filename='main.log',
-    format='%(asctime)s, %(levelname)s, %(name)s, %(message)s',
-    filemode='w',
-)
-
-DATA_ROOT = os.path.join(settings.BASE_DIR, 'data')
 
 
 class Command(BaseCommand):
-    help = 'Load data from csv file into the database'
+    """Ingredients loader."""
+    help = "Load ingredients from csv file (should be in '/backend/data')."
 
-    def add_arguments(self, parser):
-        parser.add_argument('filename', default='tags.csv', nargs='?',
-                            type=str)
+    def handle(self, *args, **kwargs):
+        tag_list = []
+        with open(
+                'data/tags.csv', 'r', encoding='UTF-8', newline='') as file:
+            csv_reader = reader(file)
 
-    def handle(self, *args, **options):
-        try:
-            with open(
-                os.path.join(DATA_ROOT, options['filename']),
-                newline='',
-                encoding='utf8'
-            ) as csv_file:
-                data = csv.reader(csv_file)
-                for row in data:
-                    name, color, slug = row
-                    Tag.objects.get_or_create(
-                        name=name,
-                        color=color,
-                        slug=slug
-                    )
-        except FileNotFoundError:
-            raise CommandError('Добавьте файл tags в директорию data')
-        logging.info('Successfully loaded all data into database')
+            for row in csv_reader:
+                name = row[0]
+                color = row[1]
+                slug = row[2]
+                tag = Tag(
+                    name=name,
+                    color=color,
+                    slug=slug
+                )
+                tag_list.append(tag)
+        Tag.objects.bulk_create(tag_list)
+
+        self.stdout.write(self.style.SUCCESS('Тэги загружены!'))

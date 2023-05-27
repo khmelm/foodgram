@@ -1,27 +1,26 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from django.contrib.auth import get_user_model
+from djoser.views import UserViewSet
+from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
+                            ShoppingCart, Tag)
+from recipes.utils import convert_txt
 from rest_framework import filters, mixins, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
-from djoser.views import UserViewSet
+from users.models import Subscription, UserFoodgram
 
 from .filters import IngredientFilter, TagFilter
 from .pagination import FoodgramPageLimitPagination
 from .permissions import IsAuthorOrAdminOrGuest
-from recipes.models import (Favorite, Ingredient, IngredientsInRecipe,
-                            ShoppingCart, Tag, Recipe)
-from recipes.utils import convert_txt
-from users.models import Subscription, UserFoodgram
 from .serializers import (CreateUpdateDeleteRecipeSerializer,
-                          CustomUserSerializer,
-                          IngredientSerializer, ListRecipeSerializer,
+                          CustomUserSerializer, IngredientSerializer,
+                          ListRecipeSerializer, ShortRecipeSerializer,
                           SubscribeSerializer, SubscriptionSerializer,
-                          ShortRecipeSerializer, TagSerializer)
-
+                          TagSerializer)
 
 User = get_user_model()
 
@@ -81,8 +80,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         if request.method == 'POST':
             return self.add_recipe(Favorite, request, pk)
-        else:
-            return self.delete_recipe(Favorite, request, pk)
+        return self.delete_recipe(Favorite, request, pk)
 
     @action(
         detail=False,
@@ -106,14 +104,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return self.add_recipe(ShoppingCart, request, pk)
-        else:
-            return self.delete_recipe(ShoppingCart, request, pk)
+        return self.delete_recipe(ShoppingCart, request, pk)
 
     def add_recipe(self, model, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
         user = self.request.user
-        if model.objects.filter(recipe=recipe, user=user).exists():
-            raise ValidationError('Рецепт уже добавлен')
         model.objects.create(recipe=recipe, user=user)
         serializer = ShortRecipeSerializer(recipe)
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)

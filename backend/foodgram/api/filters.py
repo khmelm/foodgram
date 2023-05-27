@@ -1,7 +1,5 @@
 from django_filters.rest_framework import FilterSet, filters
-
-from recipes.models import Ingredient, Recipe
-from recipes.models import Tag
+from recipes.models import Ingredient, Recipe, Tag
 from users.models import UserFoodgram
 
 

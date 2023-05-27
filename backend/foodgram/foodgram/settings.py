@@ -1,6 +1,5 @@
 import os
 from datetime import timedelta
-
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -110,7 +109,7 @@ DJOSER = {
     },
     'SERIALIZERS': {
         'user': 'api.serializers.CustomUserSerializer',
-        'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'user_create': 'djoser.serializers.UserCreateSerializer',
     },
 }
 
