@@ -1,10 +1,9 @@
 from django.db import transaction
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-from rest_framework import serializers, validators
-
 from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
                             ShoppingCart, Tag)
+from rest_framework import serializers, validators
 from users.models import Subscription, UserFoodgram
 
 MAX_VALUE = 32000
