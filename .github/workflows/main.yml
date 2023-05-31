@@ -46,6 +46,7 @@ jobs:
           file: backend/foodgram/Dockerfile
           push: true
           tags: ${{ secrets.MY_SECRET_DOCKERNAME }}/foodgram_backend:latest
+  
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
@@ -78,6 +79,7 @@ jobs:
           sudo docker exec backend python manage.py createsuperuser --email test@test.ru --username TestUser --first_name TestUser --last_name TestUser --no-input
           sudo docker exec backend python manage.py ingrdients_import
           sudo docker exec backend python manage.py tags_import
+  
   send_message:
     runs-on: ubuntu-latest
     needs: deploy
