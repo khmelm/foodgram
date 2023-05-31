@@ -7,7 +7,6 @@ from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
                             ShoppingCart, Tag)
 from users.models import Subscription, UserFoodgram
 
-
 MAX_VALUE = 32000
 MIN_VALUE = 0
 
@@ -137,7 +136,7 @@ class ListRecipeSerializer(serializers.ModelSerializer):
         return self.in_list(obj, ShoppingCart)
 
 
-class CreateUpdateDeleteRecipeSerializer(serializers.ModelSerializer):
+class CUDRecipeSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True
@@ -156,7 +155,7 @@ class CreateUpdateDeleteRecipeSerializer(serializers.ModelSerializer):
             'cooking_time'
         )
 
-    def validate(self, data):
+    def validate_ingredients(self, data):
         ingredients = data['ingredients']
         ingredients_set = set()
         if not ingredients:
@@ -182,7 +181,9 @@ class CreateUpdateDeleteRecipeSerializer(serializers.ModelSerializer):
                     )
                 })
             ingredients_set.add(ingredient_id)
+            return data
 
+    def validate_tags(self, data):
         tags = data['tags']
         tags_list = []
         if len(tags) > len(set(tags)):
@@ -190,7 +191,9 @@ class CreateUpdateDeleteRecipeSerializer(serializers.ModelSerializer):
                 'tags': 'В рецепте не может быть повторяющихся тэгов'
             })
         tags_list.append(tags)
+        return data
 
+    def validate_recipe(self, data):
         recipe = data['name']
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
@@ -199,7 +202,9 @@ class CreateUpdateDeleteRecipeSerializer(serializers.ModelSerializer):
         if recipe and user:
             if user.recipe.filter(name=recipe).exists():
                 raise serializers.ValidationError('Рецепт уже добавлен')
+        return data
 
+    def validate_cooking_time(self, data):
         cooking_time = data['cooking_time']
         if int(cooking_time) <= MIN_VALUE:
             raise serializers.ValidationError({

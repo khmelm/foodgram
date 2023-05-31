@@ -20,29 +20,29 @@ class UserFoodgram(AbstractUser):
         unique=True,
         verbose_name='Email',
         blank=False
-        )
+    )
     username = models.CharField(
         max_length=150,
         null=False,
         unique=True,
         verbose_name='Никнейм',
         blank=False
-        )
+    )
     first_name = models.CharField(
         max_length=150,
         verbose_name='Имя',
-        )
+    )
     last_name = models.CharField(
         max_length=150,
         verbose_name='Фамилия',
-        )
+    )
     confirmation_code = models.CharField(
         max_length=150,
         editable=False,
         verbose_name='Код подтверждения',
         null=False,
         blank=False
-        )
+    )
     role = models.CharField(
         max_length=10,
         choices=UserRoles.choices,

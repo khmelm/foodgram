@@ -1,6 +1,7 @@
 from csv import reader
 
 from django.core.management.base import BaseCommand
+
 from recipes.models import Ingredient
 
 
@@ -11,7 +12,11 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         ingredient_list = []
         with open(
-                'data/ingredients.csv', 'r', encoding='UTF-8', newline='') as file:
+            'data/ingredients.csv',
+            'r',
+            encoding='UTF-8',
+            newline=''
+        ) as file:
             csv_reader = reader(file)
 
             for row in csv_reader:

@@ -3,19 +3,20 @@ from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
-                            ShoppingCart, Tag)
-from recipes.utils import convert_txt
 from rest_framework import filters, mixins, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
+from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
+                            ShoppingCart, Tag)
+from recipes.utils import convert_txt
 from users.models import Subscription, UserFoodgram
 
 from .filters import IngredientFilter, TagFilter
 from .pagination import FoodgramPageLimitPagination
 from .permissions import IsAuthorOrAdminOrGuest
-from .serializers import (CreateUpdateDeleteRecipeSerializer,
+from .serializers import (CUDRecipeSerializer,
                           CustomUserSerializer, IngredientSerializer,
                           ListRecipeSerializer, ShortRecipeSerializer,
                           SubscribeSerializer, SubscriptionSerializer,
@@ -65,7 +66,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return ListRecipeSerializer
-        return CreateUpdateDeleteRecipeSerializer
+        return CUDRecipeSerializer
 
     def perform_create(self, serializer):
         user = self.request.user
