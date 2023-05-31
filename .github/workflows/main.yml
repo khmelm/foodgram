@@ -59,11 +59,10 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.MY_SECRET_PASSPHRASE }} 
         script: |
-          cd foodgram-project-react/infra
-          sudo docker pull ${{ secrets.MY_SECRET_DOCKERNAME }}/foodgram_backend:latest
-          sudo docker pull ${{ secrets.MY_SECRET_DOCKERNAME }}/foodgram_frontend:latest
           sudo docker-compose stop
           sudo docker-compose rm backend
+          sudo docker pull ${{ secrets.MY_SECRET_DOCKERNAME }}/foodgram_backend:latest
+          sudo docker pull ${{ secrets.MY_SECRET_DOCKERNAME }}/foodgram_frontend:latest
           touch .env
           echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >| .env
           echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
