@@ -46,12 +46,6 @@ jobs:
           file: backend/foodgram/Dockerfile
           push: true
           tags: ${{ secrets.MY_SECRET_DOCKERNAME }}/foodgram_backend:latest
-      - name: Push frontend
-        uses: docker/build-push-action@v2 
-        with:
-          context: ./frontend/
-          push: true
-          tags: ${{ secrets.MY_SECRET_DOCKERNAME }}/foodgram_frontend:latest
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
@@ -63,7 +57,7 @@ jobs:
         host: ${{ secrets.MY_SECRET_HOST }}
         username: ${{ secrets.MY_SECRET_USER }}
         key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.MY_SECRET_PASSPHRASE }} # Если ваш ssh-ключ защищён фразой-паролем
+        passphrase: ${{ secrets.MY_SECRET_PASSPHRASE }} 
         script: |
           cd foodgram-project-react/infra
           sudo docker pull ${{ secrets.MY_SECRET_DOCKERNAME }}/foodgram_backend:latest
