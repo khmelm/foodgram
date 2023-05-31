@@ -12,7 +12,7 @@ def convert_txt(shop_list):
         lines.append(f'{name} ({measurement_unit}) - {amount}')
     lines.append('\nFoodGram At Your Service')
     content = '\n'.join(lines)
-    content_type = 'text/plain,charset=utf8'
+    content_type = 'text/plain'
     response = HttpResponse(content, content_type=content_type)
     response['Content-Disposition'] = f'attachment; filename={file_name}'
     return response

@@ -71,12 +71,14 @@ class Subscription(models.Model):
         on_delete=models.CASCADE,
         related_name='follower',
         verbose_name='Подписчик',
+        null=True
     )
     author = models.ForeignKey(
         UserFoodgram,
         on_delete=models.CASCADE,
         related_name='following',
-        verbose_name='Отслеживаемый автор'
+        verbose_name='Отслеживаемый автор',
+        null=True
     )
 
     def email(self):

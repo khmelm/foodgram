@@ -171,7 +171,8 @@ class CreateUpdateDeleteRecipeSerializer(serializers.ModelSerializer):
                 })
             if int(amount) > MAX_VALUE:
                 raise serializers.ValidationError({
-                    'amount': 'Количество ингредиентов должно быть больше 32000'
+                    'amount':
+                    'Количество ингредиентов должно быть больше 32000'
                 })
             ingredient_id = ingredient['id']
             if ingredient_id in ingredients_set:
@@ -206,7 +207,8 @@ class CreateUpdateDeleteRecipeSerializer(serializers.ModelSerializer):
             })
         if int(cooking_time) > MAX_VALUE:
             raise serializers.ValidationError({
-                'cooking_time': 'Время приготовления не может быть больше 32000'
+                'cooking_time':
+                'Время приготовления не может быть больше 32000'
             })
         return data
 
@@ -264,9 +266,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField(
         method_name='get_is_subscribed'
     )
-    recipe = serializers.SerializerMethodField(method_name='get_recipe')
-    recipe_count = serializers.SerializerMethodField(
-        method_name='get_recipe_count'
+    recipes = serializers.SerializerMethodField(method_name='get_recipes')
+    recipes_count = serializers.SerializerMethodField(
+        method_name='get_recipes_count'
     )
 
     class Meta:
@@ -278,16 +280,19 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'is_subscribed',
-            'recipe',
-            'recipe_count'
+            'recipes',
+            'recipes_count'
         )
+
+    def get_id(self, obj):
+        return obj.author.id
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         user = request.user
         return user.follower.all().exists()
 
-    def get_recipe(self, obj):
+    def get_recipes(self, obj):
         request = self.context.get('request')
         if request.GET.get('recipe_limit'):
             recipe_limit = int(request.GET.get('recipe_limit'))
@@ -295,13 +300,11 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         else:
             queryset = obj.author.recipe.all()
         serializer = ShortRecipeSerializer(
-            queryset,
-            read_only=True,
-            many=True
+            queryset, read_only=True, many=True
         )
         return serializer.data
 
-    def get_recipe_count(self, obj):
+    def get_recipes_count(self, obj):
         return obj.author.recipe.count()
 
 

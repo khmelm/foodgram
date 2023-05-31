@@ -12,7 +12,7 @@ router.register('tags', TagViewSet, basename='tags')
 router.register('recipes', RecipeViewSet, basename='recipes')
 router.register('ingredients', IngredientViewSet, basename='ingredients')
 router.register(
-    r'users/subscriptions/',
+    r'users/subscriptions',
     SubscriptionViewSet,
     basename='subscriptions'
 )
@@ -21,6 +21,6 @@ router.register(r'users', UserFoodgramViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('auth/', include('djoser.urls.authtoken')),
     path('users/<int:pk>/subscribe/', SubscribeView.as_view()),
+    path('auth/', include('djoser.urls.authtoken')),
 ]

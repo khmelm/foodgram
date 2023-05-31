@@ -1,27 +1,53 @@
 version: '3.3'
+
 services:
   db:
+    container_name: db
     image: postgres:14-alpine
-    ports:
-      - 5432:5432
     volumes:
       - db_data:/var/lib/postgresql/data/
     env_file:
       - ./.env  
+  
+  backend:
+    container_name: backend
+    image: khmelm/foodgram_backend:latest
+    restart: always
+    ports: 
+      - "8000:8000"
+    volumes:
+      - static_value:/backend/foodgram/static/
+      - media_value:/backend/foodgram/media/
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    container_name: frontend
+    image: khmelm/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
+  
   nginx:
-    image: nginx:1.19.3
+    container_name: nginx
+    image: nginx:1.21.3-alpine
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   db_data:
+    name: db_data
+  static_value:
+    name: static_value
+  media_value:
+    name: media_value
