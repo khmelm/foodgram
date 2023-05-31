@@ -1,7 +1,7 @@
 # build env
 FROM python:3.9-slim
 
-WORKDIR /backend
+WORKDIR /app
 
 COPY requirements.txt .
 
