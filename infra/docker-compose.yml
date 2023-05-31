@@ -13,8 +13,8 @@ services:
     container_name: backend
     image: khmelm/foodgram_backend:latest
     restart: always
-    ports: 
-      - "8000:8000"
+    expose: 
+      - 8000
     volumes:
       - static_value:/backend/foodgram/static/
       - media_value:/backend/foodgram/media/
