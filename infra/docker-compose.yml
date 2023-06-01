@@ -16,8 +16,8 @@ services:
     expose: 
       - 8000
     volumes:
-      - static_value:/backend/foodgram/static/
-      - media_value:/backend/foodgram/media/
+      - static_value:/backend/static/
+      - media_value:/backend/media/
     depends_on:
       - db
     env_file:
@@ -46,8 +46,5 @@ services:
 
 volumes:
   db_data:
-    name: db_data
   static_value:
-    name: static_value
   media_value:
-    name: media_value

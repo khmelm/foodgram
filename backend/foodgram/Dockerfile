@@ -1,7 +1,7 @@
 # build env
 FROM python:3.9-slim
 
-WORKDIR /backend/foodgram
+WORKDIR /backend
 
 COPY requirements.txt .
 
