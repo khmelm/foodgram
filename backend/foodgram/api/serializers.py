@@ -84,7 +84,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientsInRecipe
-        fields = ('id', 'amount')
+        fields = ['id', 'amount']
 
 
 class ListRecipeSerializer(serializers.ModelSerializer):
@@ -145,16 +145,23 @@ class CUDRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = (
+        fields = [
             'tags',
             'name',
             'ingredients',
             'image',
             'text',
             'cooking_time'
-        )
+        ]
 
-    def validate_ingredients(self, data):
+    def validate(self, data):
+        self.val_ingredients(data)
+        self.val_tags(data)
+        self.val_recipe_existence(data)
+        self.val_cooking_time(data)
+        return data
+
+    def val_ingredients(self, data):
         ingredients = data['ingredients']
         ingredients_set = set()
         if not ingredients:
@@ -180,20 +187,18 @@ class CUDRecipeSerializer(serializers.ModelSerializer):
                     )
                 })
             ingredients_set.add(ingredient_id)
-            return data
+        return ingredients
 
-    def validate_tags(self, data):
-        tags = data['tags']
-        tags_list = []
-        if len(tags) > len(set(tags)):
+    def val_tags(self, data):
+        tags = self.initial_data.get('tags')
+        if len(tags) != len(set(tags)):
             raise serializers.ValidationError({
                 'tags': 'В рецепте не может быть повторяющихся тэгов'
             })
-        tags_list.append(tags)
-        return data
+        return tags
 
-    def validate_recipe(self, data):
-        recipe = data['name']
+    def val_recipe_existence(self, data):
+        recipe = data.get('name')
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
@@ -201,20 +206,20 @@ class CUDRecipeSerializer(serializers.ModelSerializer):
         if recipe and user:
             if user.recipe.filter(name=recipe).exists():
                 raise serializers.ValidationError('Рецепт уже добавлен')
-        return data
 
-    def validate_cooking_time(self, data):
-        cooking_time = data['cooking_time']
+    def val_cooking_time(self, data):
+        cooking_time = self.initial_data.get('cooking_time')
         if int(cooking_time) <= MIN_VALUE:
             raise serializers.ValidationError({
-                'cooking_time': 'Время приготовления не может быть меньше 1'
+                'cooking_time':
+                    'Время приготовления не может быть меньше 1'
             })
         if int(cooking_time) > MAX_VALUE:
             raise serializers.ValidationError({
                 'cooking_time':
-                'Время приготовления не может быть больше 32000'
+                    'Время приготовления не может быть больше 32000'
             })
-        return data
+        return cooking_time
 
     @staticmethod
     def create_ingredients(ingredients, recipe):
