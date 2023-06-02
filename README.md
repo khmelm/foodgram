@@ -1,5 +1,9 @@
 # Финальный проект курса - "Python-Разработчик" - Foodgram - продуктовый помощник
+<<<<<<< HEAD
 ![example workflow](https://github.com/khmelm/foodgram-project-react/actions/workflows/main.yml/badge.svg)  
+=======
+![example workflow](https://github.com/khmelm/Foodgram/actions/workflows/main.yml/badge.svg)  
+>>>>>>> 40d70ec25adc3db18fb9c2ccbf8d01b81357bca0
 
 ## Стек технологий
 [![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
